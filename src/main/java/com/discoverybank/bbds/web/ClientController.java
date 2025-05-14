@@ -1,7 +1,7 @@
 package com.discoverybank.bbds.web;
 
 import com.discoverybank.bbds.repository.entities.Client;
-import com.discoverybank.bbds.service.transactional.user.ClientService;
+import com.discoverybank.bbds.service.transactional.ClientService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;

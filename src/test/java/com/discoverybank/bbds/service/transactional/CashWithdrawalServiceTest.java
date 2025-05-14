@@ -5,6 +5,7 @@ import com.discoverybank.bbds.repository.AtmRepository;
 import com.discoverybank.bbds.repository.ClientAccountRepository;
 import com.discoverybank.bbds.repository.entities.Atm;
 import com.discoverybank.bbds.repository.entities.AtmAllocation;
+import com.discoverybank.bbds.repository.entities.Client;
 import com.discoverybank.bbds.repository.entities.ClientAccount;
 import com.discoverybank.bbds.repository.entities.Denomination;
 import com.discoverybank.bbds.web.model.CashWithdrawalResponse;
@@ -48,6 +49,10 @@ public class CashWithdrawalServiceTest {
 
         ClientAccount clientAccount = new ClientAccount();
         clientAccount.setDisplayBalance(new BigDecimal("1000"));
+
+        Client client = new Client();
+        client.setClientId(clientId);
+        clientAccount.setClient(client);
 
         Denomination denomination = new Denomination();
         denomination.setDenominationId(1);

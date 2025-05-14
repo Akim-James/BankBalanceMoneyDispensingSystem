@@ -1,8 +1,7 @@
 package com.discoverybank.bbds.web;
 
-import com.discoverybank.bbds.web.model.ClientAccountResponse;
-import com.discoverybank.bbds.service.account.BankAccountService;
 import com.discoverybank.bbds.service.transactional.ClientAccountService;
+import com.discoverybank.bbds.web.model.ClientAccountResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,12 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class BankAccountController {
 
-    private final BankAccountService bankAccountService;
-
     private final ClientAccountService clientAccountService;
 
-    public BankAccountController(BankAccountService bankAccountService, ClientAccountService clientAccountService) {
-        this.bankAccountService = bankAccountService;
+    public BankAccountController(ClientAccountService clientAccountService) {
         this.clientAccountService = clientAccountService;
     }
 

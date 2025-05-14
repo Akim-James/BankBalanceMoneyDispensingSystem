@@ -1,4 +1,4 @@
-package com.discoverybank.bbds.service.transactional.user;
+package com.discoverybank.bbds.service.transactional;
 
 import com.discoverybank.bbds.config.BbdsConfig;
 import com.discoverybank.bbds.exception.UserNotFoundException;
