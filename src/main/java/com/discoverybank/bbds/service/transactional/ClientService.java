@@ -1,6 +1,5 @@
 package com.discoverybank.bbds.service.transactional;
 
-import com.discoverybank.bbds.config.BbdsConfig;
 import com.discoverybank.bbds.exception.UserNotFoundException;
 import com.discoverybank.bbds.repository.ClientRepository;
 import com.discoverybank.bbds.repository.entities.Client;
@@ -12,10 +11,8 @@ import java.util.Optional;
 public class ClientService {
 
     private final ClientRepository clientRepository;
-    private final BbdsConfig bankProperties;
 
-    public ClientService(BbdsConfig bankProperties, ClientRepository clientRepository) {
-        this.bankProperties = bankProperties;
+    public ClientService(ClientRepository clientRepository) {
         this.clientRepository = clientRepository;
     }
 

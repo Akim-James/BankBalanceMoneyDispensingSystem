@@ -20,6 +20,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * The CashWithdrawalService class provides functionality for handling
+ * cash withdrawal operations from an ATM. The service interacts with
+ * repositories for managing ATM and client account data and ensures
+ * withdrawal transactions are executed securely and accurately.
+ */
 @Slf4j
 @Service
 public class CashWithdrawalService {
@@ -32,6 +38,19 @@ public class CashWithdrawalService {
         this.clientAccountRepository = clientAccountRepository;
     }
 
+    /**
+     * Processes a withdrawal request from a client's account using an ATM.
+     * This method performs validation on the client's account and ATM
+     * funds, updates the ATM and account balances, and generates a response
+     * with details about the dispensed denominations and transaction result.
+     *
+     * @param clientId the unique identifier of the client initiating the withdrawal
+     * @param accountNumber the account number of the client from which the funds are to be withdrawn
+     * @param atmId the unique identifier of the ATM from which funds are being dispensed
+     * @param requiredAmount the amount requested by the client for withdrawal
+     * @return a {@link CashWithdrawalResponse} containing the account details,
+     * details of the dispensed denominations, and the result of the transaction
+     */
     @Transactional
     public CashWithdrawalResponse withdrawFromAccount(Integer clientId, Long accountNumber, Integer atmId, BigDecimal requiredAmount) {
         log.info("Initiating withdrawal for clientId: {}, accountNumber: {}, atmId: {}, requiredAmount: {}", clientId, accountNumber, atmId, requiredAmount);
@@ -50,6 +69,15 @@ public class CashWithdrawalService {
         return response;
     }
 
+    /**
+     * Fetches the client account associated with the given client ID and account number.
+     * Logs the operation and throws a WithdrawalException if the account is not found.
+     *
+     * @param clientId the unique identifier of the client
+     * @param accountNumber the account number belonging to the client
+     * @return the {@link ClientAccount} object representing the client's account
+     * @throws WithdrawalException if the account is not found or invalid
+     */
     private ClientAccount fetchClientAccount(Integer clientId, Long accountNumber) {
         log.debug("Fetching client account for clientId: {}, accountNumber: {}", clientId, accountNumber);
         ClientAccount clientAccount = clientAccountRepository.findByClientIdAndAccountNumber(clientId, accountNumber);
@@ -60,6 +88,15 @@ public class CashWithdrawalService {
         return clientAccount;
     }
 
+    /**
+     * Fetches the ATM information for the specified ATM ID.
+     * This method logs the operation and throws a WithdrawalException
+     * if the ATM is not found or is unfunded.
+     *
+     * @param atmId the unique identifier of the ATM to be fetched
+     * @return the {@link Atm} object representing the ATM information
+     * @throws WithdrawalException if the ATM is not registered or is unfunded
+     */
     private Atm fetchAtm(Integer atmId) {
         log.debug("Fetching ATM with atmId: {}", atmId);
         return atmRepository.findById(atmId).orElseThrow(() -> {
@@ -68,6 +105,17 @@ public class CashWithdrawalService {
         });
     }
 
+    /**
+     * Verifies if the ATM has sufficient funds to fulfill the required withdrawal amount.
+     * Calculates the total available cash in the ATM by summing up the product of
+     * the denomination value and count for each ATM allocation. Throws a
+     * {@link WithdrawalException} if the available cash is less than the required amount.
+     *
+     * @param atm the {@link Atm} object representing the ATM from which funds are to be withdrawn.
+     * @param requiredAmount the {@link BigDecimal} value indicating the amount to be withdrawn.
+     * @throws WithdrawalException if the available cash in the ATM is insufficient
+     * to meet the required withdrawal amount.
+     */
     private void verifySufficientAtmFunds(Atm atm, BigDecimal requiredAmount) {
         BigDecimal availableCash = atm.getAtmAllocations().stream()
                 .map(allocation -> allocation.getDenomination().getDenominationValue().multiply(BigDecimal.valueOf(allocation.getCount())))
@@ -80,6 +128,17 @@ public class CashWithdrawalService {
         }
     }
 
+    /**
+     * Dispenses cash from the given ATM based on the required amount.
+     * The method calculates the denominations to be dispensed starting from the largest available
+     * denomination in the ATM, ensuring it covers the requested amount or throws an exception if the
+     * exact amount cannot be dispensed.
+     *
+     * @param atm the ATM object containing available cash allocations and their respective denominations
+     * @param requiredAmount the total amount of cash requested to be dispensed
+     * @return a list of {@code DenominationDto} representing the dispensed denominations and their respective counts
+     * @throws WithdrawalException if the exact amount cannot be dispensed due to insufficient or mismatched denominations
+     */
     private List<DenominationDto> dispenseCash(Atm atm, BigDecimal requiredAmount) {
         log.debug("Dispensing cash for required amount: {}", requiredAmount);
         BigDecimal remainingAmount = requiredAmount;
@@ -132,6 +191,13 @@ public class CashWithdrawalService {
         atmRepository.save(atm);
     }
 
+    /**
+     * Builds a cash withdrawal response for a given client account and list of dispensed denominations.
+     *
+     * @param clientAccount the client account from which the withdrawal is made
+     * @param dispensedDenominations the list of denominations dispensed as part of the withdrawal
+     * @return a CashWithdrawalResponse object containing account details, dispensed denominations, and a result status
+     */
     private CashWithdrawalResponse buildWithdrawalResponse(ClientAccount clientAccount, List<DenominationDto> dispensedDenominations) {
         log.debug("Building withdrawal response for clientId: {}", clientAccount.getClient().getClientId());
         return CashWithdrawalResponse.builder()
