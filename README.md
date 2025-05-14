@@ -1,30 +1,93 @@
-# Bank Balance And Cash Dispensing System
+# Bank Balance Dispensing System (BBDS)
 
-Welcome to the `Bank Balance And Cash Dispensing System` project! This application serves as a comprehensive solution for managing client accounts, facilitating cash withdrawals, and querying transactional and currency account balances.
+## Overview
+The Bank Balance Dispensing System (BBDS) is a modern banking application built with Spring Boot that manages ATM cash dispensing operations. The system handles cash withdrawals while maintaining accurate account balances and ATM cash inventories.
+
+## Features
+- Cash withdrawal processing
+- Real-time account balance management
+- ATM cash inventory tracking
+- Denomination-based cash dispensing
+- Transaction logging and monitoring
+- Secure client account validation
+
+## Technology Stack
+- Java 17
+- Spring Boot
+- Spring Data JPA
+- Jakarta EE
+- Lombok
+- Maven/Gradle (build tool)
+- PostgreSQL/MySQL (database)
 
 ## Project Structure
 
-Here's a brief overview of the project's package organization:
+## Key Components
 
-- **config**: Contains configuration settings for the application.
-- **dto**: Data Transfer Objects used within the application.
-- **exception**: Custom exceptions leveraged by the services.
-- **mapper**: Mapper classes for converting entities to DTOs.
-- **repository**: Contains repository interfaces for database entity interactions.
-- **service.transactional**: Services handling transactional operations like account querying and cash withdrawal.
-- **web**: REST controllers managing HTTP requests from the client.
+### Services
+- `CashWithdrawalService`: Manages the cash withdrawal process, including account validation, funds verification, and cash dispensing.
 
-## Key Features
+### Repositories
+- `AtmRepository`: Manages ATM entity operations
+- `ClientAccountRepository`: Handles client account data operations
 
-- **Cash Withdrawal**: Facilitates cash withdrawal transactions, ensuring atomic operations via transaction management.
-- **Account Queries**: Fetches transactional and currency account balances for clients.
-- **Error Handling**: Implements robust exception handling for invalid operations or queries.
-- **Logging**: Utilizes SLF4J for effective logging throughout services.
+### DTOs and Models
+- `DenominationDto`: Represents currency denomination data
+- `CashWithdrawalResponse`: Encapsulates withdrawal transaction response
 
-## Setup Instructions
+### Entities
+- `Atm`: Represents ATM machine data
+- `AtmAllocation`: Manages ATM cash denominations
+- `ClientAccount`: Stores client account information
 
-To get started with the Bank Balance Dispensing System, follow these instructions:
+## Getting Started
 
-1. **Clone the Repository**:
-   ```bash
-   https://github.com/Akim-James/BankBalanceMoneyDispensingSystem.git
+### Prerequisites
+- JDK 17 or higher
+- Maven/Gradle
+- Your preferred IDE (IntelliJ IDEA recommended)
+- Database (PostgreSQL/MySQL)
+
+### Installation
+1. Clone the repository:
+```shell
+git clone git clone [https://github.com/yourusername/BankBalanceDispensingSystem.git](https://github.com/yourusername/BankBalanceDispensingSystem.git)
+```
+2. Navigate to the project directory:
+```shell
+bash cd BankBalanceDispensingSystem
+```
+3. Build the project:
+```shell
+ ./mvnw clean install
+```
+4. Run the application:
+```shell
+ ./mvnw spring-boot:run
+```
+
+## API Usage
+
+### Cash Withdrawal
+
+Request body:
+```PLAINTEXT
+json { "clientId": 1, "accountNumber": 1234567890, "atmId": 1, "amount": 1000.00 }
+```
+
+## Configuration
+The application can be configured through `application.properties`/`application.yml` files:
+- Database connection settings
+- Logging levels
+- Server configurations
+
+## Security
+- Transactional integrity is maintained using Spring's `@Transactional`
+- Input validation and error handling
+- Secure account verification
+
+## Logging
+The application uses SLF4J for logging, with different log levels:
+- INFO: Transaction processing
+- DEBUG: Detailed operation tracking
+- ERROR: Exception and error handling
