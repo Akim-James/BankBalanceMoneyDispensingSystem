@@ -52,24 +52,6 @@ Here's a brief overview of the project's package organization:
 - Your preferred IDE (IntelliJ IDEA recommended)
 - Database (PostgreSQL/MySQL)
 
-### Installation
-1. Clone the repository:
-```shell
-git clone git clone [https://github.com/yourusername/BankBalanceDispensingSystem.git](https://github.com/yourusername/BankBalanceDispensingSystem.git)
-```
-2. Navigate to the project directory:
-```shell
-bash cd BankBalanceDispensingSystem
-```
-3. Build the project:
-```shell
- ./mvnw clean install
-```
-4. Run the application:
-```shell
- ./mvnw spring-boot:run
-```
-
 ## Configuration
 The application can be configured through `application.properties`/`application.yml` files:
 - Database connection settings
@@ -102,7 +84,7 @@ Before you can access the Swagger UI, ensure that:
 ## Setup and Running the Application
 ### 1. Clone the Repository
 ``` bash
-git clone <repository-url>
+git clone https://github.com/Akim-James/BankBalanceMoneyDispensingSystem.git
 cd bank-balance-dispensing-system
 ```
 ### 2. Build the Project
