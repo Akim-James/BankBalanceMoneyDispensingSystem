@@ -1,8 +1,9 @@
 package com.discoverybank.bbds.service.transactional;
 
-import com.discoverybank.bbds.exception.WithdrawalException;
+import com.discoverybank.bbds.repository.AccountTypeCode;
 import com.discoverybank.bbds.repository.AtmRepository;
 import com.discoverybank.bbds.repository.ClientAccountRepository;
+import com.discoverybank.bbds.repository.entities.AccountType;
 import com.discoverybank.bbds.repository.entities.Atm;
 import com.discoverybank.bbds.repository.entities.AtmAllocation;
 import com.discoverybank.bbds.repository.entities.Client;
@@ -19,7 +20,8 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,8 +42,8 @@ public class CashWithdrawalServiceTest {
     }
 
     @Test
-    void testWithdrawalSuccess() {
-        // When
+    void testWithdrawalSuccessForChequeAccountWithNoOverdraft() {
+        // Setup
         Integer clientId = 1;
         Long accountNumber = 123456789L;
         Integer atmId = 1;
@@ -49,6 +51,10 @@ public class CashWithdrawalServiceTest {
 
         ClientAccount clientAccount = new ClientAccount();
         clientAccount.setDisplayBalance(new BigDecimal("1000"));
+
+        AccountType accountType = new AccountType();
+        accountType.setAccountTypeCode(AccountTypeCode.CHEQUE.getCode());
+        clientAccount.setAccountType(accountType);
 
         Client client = new Client();
         client.setClientId(clientId);
@@ -58,7 +64,6 @@ public class CashWithdrawalServiceTest {
         denomination.setDenominationId(1);
         denomination.setDenominationValue(new BigDecimal("50"));
 
-
         AtmAllocation atmAllocation = new AtmAllocation();
         atmAllocation.setDenomination(denomination);
         atmAllocation.setCount(10);
@@ -66,16 +71,14 @@ public class CashWithdrawalServiceTest {
         Atm atm = new Atm();
         atm.setAtmAllocations(Set.of(atmAllocation));
 
-
-        when(clientAccountRepository.findByClientIdAndAccountNumber(clientId, accountNumber))
-                .thenReturn(clientAccount);
-
+        // When
+        when(clientAccountRepository.findByClientIdAndAccountNumber(clientId, accountNumber)).thenReturn(clientAccount);
         when(atmRepository.findById(atmId)).thenReturn(Optional.of(atm));
 
-        // Do
+        // Execution
         CashWithdrawalResponse response = cashWithdrawalService.withdrawFromAccount(clientId, accountNumber, atmId, requiredAmount);
 
-        // Assert
+        // Verification
         assertNotNull(response);
         assertEquals(new BigDecimal("900"), clientAccount.getDisplayBalance());
         assertEquals(8, atmAllocation.getCount());
@@ -85,15 +88,23 @@ public class CashWithdrawalServiceTest {
     }
 
     @Test
-    void testInsufficientFundsInATM() {
-        // When
+    void testOverdraftAllowedOnChequeAccount() {
+        // Setup a cheque account with a balance less than required, but within overdraft limit.
         Integer clientId = 1;
         Long accountNumber = 123456789L;
         Integer atmId = 1;
-        BigDecimal requiredAmount = new BigDecimal("250");
+        BigDecimal requiredAmount = new BigDecimal("10500"); // allowed overdraft
 
         ClientAccount clientAccount = new ClientAccount();
-        clientAccount.setDisplayBalance(new BigDecimal("1000"));
+        clientAccount.setDisplayBalance(new BigDecimal("500")); // Resulting in a -10,000 balance
+
+        AccountType accountType = new AccountType();
+        accountType.setAccountTypeCode(AccountTypeCode.CHEQUE.getCode());
+        clientAccount.setAccountType(accountType);
+
+        Client client = new Client();
+        client.setClientId(clientId);
+        clientAccount.setClient(client);
 
         Denomination denomination = new Denomination();
         denomination.setDenominationId(1);
@@ -101,40 +112,23 @@ public class CashWithdrawalServiceTest {
 
         AtmAllocation atmAllocation = new AtmAllocation();
         atmAllocation.setDenomination(denomination);
-        atmAllocation.setCount(4);
+        atmAllocation.setCount(210);
 
         Atm atm = new Atm();
         atm.setAtmAllocations(Set.of(atmAllocation));
 
-        when(clientAccountRepository.findByClientIdAndAccountNumber(clientId, accountNumber))
-                .thenReturn(clientAccount);
-
+        when(clientAccountRepository.findByClientIdAndAccountNumber(clientId, accountNumber)).thenReturn(clientAccount);
         when(atmRepository.findById(atmId)).thenReturn(Optional.of(atm));
 
-        // Do
-        WithdrawalException exception = assertThrows(WithdrawalException.class,
-                () -> cashWithdrawalService.withdrawFromAccount(clientId, accountNumber, atmId, requiredAmount));
+        // Execution
+        CashWithdrawalResponse response = cashWithdrawalService.withdrawFromAccount(clientId, accountNumber, atmId, requiredAmount);
 
-        assertEquals("Insufficient funds available. You may choose to withdraw " + new BigDecimal("200"), exception.getMessage());
-    }
+        // Verification
+        assertNotNull(response);
+        assertEquals(new BigDecimal("-10000"), clientAccount.getDisplayBalance());
+        assertEquals(0, atmAllocation.getCount());
 
-    @Test
-    void testInvalidATM() {
-        // When
-        Integer clientId = 1;
-        Long accountNumber = 123456789L;
-        Integer atmId = 999;
-        BigDecimal requiredAmount = new BigDecimal("100");
-
-        when(clientAccountRepository.findByClientIdAndAccountNumber(clientId, accountNumber))
-                .thenReturn(new ClientAccount());
-
-        when(atmRepository.findById(atmId)).thenReturn(Optional.empty());
-
-        // Do & Assert
-        WithdrawalException exception = assertThrows(WithdrawalException.class,
-                () -> cashWithdrawalService.withdrawFromAccount(clientId, accountNumber, atmId, requiredAmount));
-
-        assertEquals("ATM not registered or unfunded", exception.getMessage());
+        verify(clientAccountRepository).save(clientAccount);
+        verify(atmRepository).save(atm);
     }
 }

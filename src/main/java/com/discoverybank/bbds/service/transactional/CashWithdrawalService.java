@@ -3,6 +3,7 @@ package com.discoverybank.bbds.service.transactional;
 import com.discoverybank.bbds.dto.DenominationDto;
 import com.discoverybank.bbds.exception.WithdrawalException;
 import com.discoverybank.bbds.mapper.ClientAccountMapper;
+import com.discoverybank.bbds.repository.AccountTypeCode;
 import com.discoverybank.bbds.repository.AtmRepository;
 import com.discoverybank.bbds.repository.ClientAccountRepository;
 import com.discoverybank.bbds.repository.entities.Atm;
@@ -30,6 +31,8 @@ import java.util.List;
 @Service
 public class CashWithdrawalService {
 
+    private static final BigDecimal MAX_OVERDRAFT_LIMIT = new BigDecimal("10000"); // Maximum overdraft limit for cheque accounts
+
     private final AtmRepository atmRepository;
     private final ClientAccountRepository clientAccountRepository;
 
@@ -43,6 +46,9 @@ public class CashWithdrawalService {
      * This method performs validation on the client's account and ATM
      * funds, updates the ATM and account balances, and generates a response
      * with details about the dispensed denominations and transaction result.
+     * <p>
+     * Allows withdrawal from a transactional account if the balance is positive,
+     * or if the account is a cheque account, permits an overdraft up to R 10,000.
      *
      * @param clientId the unique identifier of the client initiating the withdrawal
      * @param accountNumber the account number of the client from which the funds are to be withdrawn
@@ -50,6 +56,7 @@ public class CashWithdrawalService {
      * @param requiredAmount the amount requested by the client for withdrawal
      * @return a {@link CashWithdrawalResponse} containing the account details,
      * details of the dispensed denominations, and the result of the transaction
+     * @throws WithdrawalException if the account or ATM validations fail
      */
     @Transactional
     public CashWithdrawalResponse withdrawFromAccount(Integer clientId, Long accountNumber, Integer atmId, BigDecimal requiredAmount) {
@@ -57,6 +64,7 @@ public class CashWithdrawalService {
         ClientAccount clientAccount = fetchClientAccount(clientId, accountNumber);
         Atm atm = fetchAtm(atmId);
 
+        verifySufficientFunds(clientAccount, requiredAmount);
         verifySufficientAtmFunds(atm, requiredAmount);
 
         List<DenominationDto> dispensedDenominations = dispenseCash(atm, requiredAmount);
@@ -180,10 +188,6 @@ public class CashWithdrawalService {
         return dispensedDenominations;
     }
 
-    private void updateClientAccountBalance(ClientAccount clientAccount, BigDecimal requiredAmount) {
-        log.debug("Updating client account balance for clientId: {} by deducting {}", clientAccount.getClient().getClientId(), requiredAmount);
-        clientAccount.setDisplayBalance(clientAccount.getDisplayBalance().subtract(requiredAmount));
-    }
 
     private void saveEntities(ClientAccount clientAccount, Atm atm) {
         log.debug("Saving updated client account and ATM entities.");
@@ -205,5 +209,38 @@ public class CashWithdrawalService {
                 .denominations(dispensedDenominations)
                 .result(new Result(true, 200, "Withdrawal successful"))
                 .build();
+    }
+
+    private void updateClientAccountBalance(ClientAccount clientAccount, BigDecimal requiredAmount) {
+        log.debug("Updating client account balance for clientId: {} by deducting {}", clientAccount.getClient().getClientId(), requiredAmount);
+        clientAccount.setDisplayBalance(clientAccount.getDisplayBalance().subtract(requiredAmount));
+    }
+
+    /**
+     * Verifies if the client's account has sufficient funds to cover the withdrawal.
+     * For cheque accounts, the method allows overdraft up to a defined maximum limit.
+     *
+     * @param clientAccount the {@link ClientAccount} object representing the client's account.
+     * @param requiredAmount the {@link BigDecimal} value indicating the amount to be withdrawn.
+     * @throws WithdrawalException if the client's account balance is insufficient to cover the withdrawal.
+     */
+    private void verifySufficientFunds(ClientAccount clientAccount, BigDecimal requiredAmount) {
+        BigDecimal currentBalance = clientAccount.getDisplayBalance();
+        BigDecimal newBalance = currentBalance.subtract(requiredAmount);
+
+        if (AccountTypeCode.CHEQUE.getCode().equals(clientAccount.getAccountType().getAccountTypeCode())) {
+            // Cheque accounts can go negative up to MAX_OVERDRAFT_LIMIT
+            if (newBalance.compareTo(MAX_OVERDRAFT_LIMIT.negate()) < 0) {
+                log.error("Insufficient funds for withdrawal from cheque account. Current balance: {}, Required amount: {}, Overdraft limit: {}",
+                        currentBalance, requiredAmount, MAX_OVERDRAFT_LIMIT);
+                throw new WithdrawalException("Overdraft limit exceeded for cheque account. Maximum allowable overdraft is R " + MAX_OVERDRAFT_LIMIT);
+            }
+        } else {
+            // Other accounts must maintain positive balance
+            if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+                log.error("Insufficient funds for withdrawal. Current balance: {}, Required amount: {}", currentBalance, requiredAmount);
+                throw new WithdrawalException("Insufficient funds available in your account.");
+            }
+        }
     }
 }

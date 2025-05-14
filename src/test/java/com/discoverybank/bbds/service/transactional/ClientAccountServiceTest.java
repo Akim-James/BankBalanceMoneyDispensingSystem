@@ -46,7 +46,7 @@ class ClientAccountServiceTest {
         when(accountRepository.findByClientIdAndTransactionalOrderByDisplayBalanceDesc(clientId, true))
                 .thenReturn(List.of(account1, account2));
 
-        // Do
+        // Execution
         ClientAccountResponse response = clientAccountService.getTransactionalAccounts(clientId);
 
         // Assert
@@ -64,7 +64,7 @@ class ClientAccountServiceTest {
         when(accountRepository.findByClientIdAndTransactionalOrderByDisplayBalanceDesc(clientId, true))
                 .thenReturn(List.of());
 
-        // Do & Assert
+        // Execution & Assert
         assertThrows(NoAccountsToDisplayException.class,
                 () -> clientAccountService.getTransactionalAccounts(clientId));
 
@@ -83,7 +83,7 @@ class ClientAccountServiceTest {
         when(accountRepository.findByClientIdAndAccountTypeCodeOrderByDisplayBalanceAsc(clientId, AccountTypeCode.CURRENCY_ACCOUNT.getCode()))
                 .thenReturn(List.of(account1, account2));
 
-        // Do
+        // Execution
         ClientAccountResponse response = clientAccountService.getCurrencyAccounts(clientId);
 
         // Assert
@@ -101,7 +101,7 @@ class ClientAccountServiceTest {
         when(accountRepository.findByClientIdAndAccountTypeCodeOrderByDisplayBalanceAsc(clientId, AccountTypeCode.CURRENCY_ACCOUNT.getCode()))
                 .thenReturn(List.of());
 
-        // Do & Assert
+        // Execution & Assert
         assertThrows(NoAccountsToDisplayException.class,
                 () -> clientAccountService.getCurrencyAccounts(clientId));
 
