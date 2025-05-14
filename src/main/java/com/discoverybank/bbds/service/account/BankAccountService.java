@@ -1,24 +1,26 @@
-package com.discoverybank.bbds.service;
+package com.discoverybank.bbds.service.account;
 
-import com.discoverybank.bbds.config.BankBalanceDispensingSystemProperties;
-import com.discoverybank.bbds.model.AccountType;
-import com.discoverybank.bbds.model.BankAccount;
-import com.discoverybank.bbds.model.ChequeAccount;
-import com.discoverybank.bbds.model.Client;
+import com.discoverybank.bbds.config.BbdsConfig;
+import com.discoverybank.bbds.dto.ClientAccountDTO;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
 public class BankAccountService {
+    private final BbdsConfig bankProperties;
+//    private final BankAccountRepository bankAccountRepository;
 
-    private final BankBalanceDispensingSystemProperties bankProperties;
-
-    public BankAccountService(BankBalanceDispensingSystemProperties bankProperties) {
+    public BankAccountService(BbdsConfig bankProperties) {
         this.bankProperties = bankProperties;
+//        this.bankAccountRepository = bankAccountRepository;
     }
 
-    public List<BankAccount> retrieveBankAccounts(Long clientId) {
-        return List.of(new ChequeAccount( "12346654" , bankProperties.getOverdraftLimit(),  13235));
+    public List<ClientAccountDTO> retrieveBankAccounts(Integer clientId) {
+//        var allByOrderByBalanceDesc = bankAccountRepository.findAllByOrderByBalanceDesc();
+
+
+        return List.of(new ClientAccountDTO(123456L, "TYPE_CODE", "TRANSACTIONAL ACCOUNT", "ZAR", new BigDecimal("23"), new BigDecimal("23"), new BigDecimal("23"), new BigDecimal("31")));
     }
 }

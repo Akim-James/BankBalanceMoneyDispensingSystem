@@ -10,9 +10,9 @@ import java.math.BigDecimal;
 @Getter
 @Component
 @ConfigurationProperties(prefix = "bank")
-public class BankBalanceDispensingSystemProperties {
+public class BbdsConfig {
 
-    @Value("${cheque.overdraft-limit}")
+    @Value("${bank.cheque.overdraft-limit}")
     private BigDecimal chequeOverdraftLimit;
 
 }

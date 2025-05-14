@@ -1,13 +1,14 @@
 package com.discoverybank.bbds;
 
-import com.discoverybank.bbds.model.AccountType;import org.springframework.boot.SpringApplication;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @SpringBootApplication
 public class BankBalanceDispensingSystemApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(AccountType.BankBalanceDispensingSystemApplication.class, args);
+        SpringApplication.run(BankBalanceDispensingSystemApplication.class, args);
     }
 
 }

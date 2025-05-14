@@ -1,4 +1,4 @@
-package com.discoverybank.bbds.repository.accounts;
+package com.discoverybank.bbds.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,4 +1,4 @@
-package com.discoverybank.bbds.model;
+package com.discoverybank.bbds.dto;
 
 
 import lombok.AllArgsConstructor;

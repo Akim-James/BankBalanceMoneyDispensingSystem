@@ -1,4 +1,4 @@
-package com.discoverybank.bbds.model;
+package com.discoverybank.bbds.dto;
 
 
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BankAccountDto {
+public class ClientAccountDTO {
 
     private Long accountNumber;
     private String typeCode;
@@ -24,4 +24,7 @@ public class BankAccountDto {
     private BigDecimal balance;
     private BigDecimal zarBalance;
     private BigDecimal accountLimit;
+
+
 }
+

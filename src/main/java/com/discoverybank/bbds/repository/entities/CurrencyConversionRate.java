@@ -1,8 +1,17 @@
-package com.discoverybank.bbds.repository;
-import com.discoverybank.bbds.repository.entities.Currency;
+package com.discoverybank.bbds.repository.entities;
+
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "CURRENCY_CONVERSION_RATE")
 public class CurrencyConversionRate {
